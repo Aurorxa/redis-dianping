@@ -80,7 +80,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Result me() {
-        User user = UserHolder.getUser();
+        UserVo user = UserHolder.getUser();
         return Result.ok(user);
     }
 }
