@@ -1,0 +1,39 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: dazhongdianping
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/test?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
+  redis:
+    host: 192.168.68.200 # Redis 主机
+    port: 6379 # 端口
+    password: 123456 # 密码
+    database: 0 # 数据库
+    lettuce:
+      pool:
+        max-active: 8 # 最大连接
+        max-idle: 8 # 最大空闲连接
+        min-idle: 0 # 最小空闲连接
+        max-wait: 100 # 连接等待时间
+  jackson:
+    default-property-inclusion: non_null # JSON 处理的时候忽略非空字段
+
+# mybatis-plus 配置
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: assign_id  # 主键生成策略
+      table-underline: true
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 开启日志输出
+    map-underscore-to-camel-case: true # 开启驼峰功能
+
+# zero 配置
+zero:
+  ac-table:
+    model: add_or_update
+    entity-package: com.github.redis.entity

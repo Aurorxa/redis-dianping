@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.6'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.github'
+version = '0.0.1'
+sourceCompatibility = '11'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.commons:commons-pool2:2.11.1'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'com.mysql:mysql-connector-j:8.0.31'
+    implementation 'cn.hutool:hutool-all:5.8.10'
+    implementation 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.2'
+    /* JSR 303 */
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'commons-io:commons-io:2.11.0'
+    /* 自动建表 */
+    implementation 'io.gitee.zero-wsh:acTable:2.0.6'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
