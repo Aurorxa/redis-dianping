@@ -1,6 +1,7 @@
 package com.github.redis.config;
 
 import com.github.redis.interceptor.LoginInterceptor;
+import com.github.redis.interceptor.RefreshTokenInterceptor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -22,16 +23,19 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 登录拦截器
-        registry.addInterceptor(new LoginInterceptor(redisTemplate))
+        // 刷新 Token 拦截器
+        registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate))
                 .addPathPatterns("/**")
+                .order(1);
+
+        // 登录拦截器
+        registry.addInterceptor(new LoginInterceptor())
                 .excludePathPatterns(
                         "/shop/**",
                         "/shop-type/**",
                         "/blog/hot",
                         "/user/login",
                         "/user/code"
-                )
-                .order(1);
+                ).order(2);
     }
 }
