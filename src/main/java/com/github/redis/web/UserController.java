@@ -16,9 +16,9 @@ import javax.servlet.http.HttpSession;
  * @since 2022-12-09 13:42:25
  */
 @Slf4j
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserController {
 
     @NonNull
@@ -33,7 +33,7 @@ public class UserController {
      */
     @PostMapping("/code")
     public Result code(String phone, HttpSession session) {
-        return userService.sendCode(phone, session);
+        return this.userService.sendCode(phone, session);
     }
 
     /**
@@ -45,7 +45,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDto loginFormDto, HttpSession session) {
-        return userService.login(loginFormDto, session);
+        return this.userService.login(loginFormDto, session);
     }
 
     /**
@@ -55,7 +55,7 @@ public class UserController {
      */
     @GetMapping("/me")
     public Result me() {
-        return userService.me();
+        return this.userService.me();
     }
 
 

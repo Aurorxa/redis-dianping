@@ -28,4 +28,9 @@ public interface RedisConstants {
      */
     Long LOGIN_TOKEN_TTL = 30L;
 
+    /**
+     * 店铺的缓存前缀
+     */
+    String CACHE_SHOP_KEY_PREFIX = "cache:shop:";
+
 }
