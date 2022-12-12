@@ -18,4 +18,12 @@ public interface ShopService extends IService<Shop> {
      * @return
      */
     Result view(Long id);
+
+    /**
+     * 更新店铺信息
+     *
+     * @param shop
+     * @return
+     */
+    Result edit(Shop shop);
 }

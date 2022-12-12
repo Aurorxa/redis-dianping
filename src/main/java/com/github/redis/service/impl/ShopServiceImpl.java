@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.Map;
 
 /**
@@ -49,6 +50,20 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         }
         // ⑤ 如果商铺存在，就将商铺信息写入到 Redis 中，并将商铺信息返回给前端
         this.redisTemplate.opsForHash().putAll(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), BeanUtil.beanToMap(shop));
+        // 设置过期时间为 30 分钟
+        this.redisTemplate.expire(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), Duration.ofMinutes(RedisConstants.CACHE_SHOP_KEY_TTL));
         return Result.ok(shop);
+    }
+
+    @Override
+    public Result edit(Shop shop) {
+        // 先操作数据库再删除缓存
+        Long id = shop.getId();
+        if (id == null) {
+            return Result.fail("店铺id不能为空");
+        }
+        this.updateById(shop);
+        this.redisTemplate.delete(StrUtil.addPrefixIfNot(String.valueOf(shop.getId()), RedisConstants.CACHE_SHOP_KEY_PREFIX));
+        return Result.ok();
     }
 }

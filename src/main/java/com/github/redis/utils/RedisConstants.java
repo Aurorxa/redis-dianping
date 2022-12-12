@@ -34,6 +34,11 @@ public interface RedisConstants {
     String CACHE_SHOP_KEY_PREFIX = "cache:shop:";
 
     /**
+     * 店铺的缓存的过期时间
+     */
+    Long CACHE_SHOP_KEY_TTL = 30L;
+
+    /**
      * 店铺类型查询列表缓存前缀
      */
     String CACHE_SHOP_TYPE_LIST_KEY_PREFIX = "cache:shop-type:list";
