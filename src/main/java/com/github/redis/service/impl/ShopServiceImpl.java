@@ -57,12 +57,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
 
     @Override
     public Result edit(Shop shop) {
-        // 先操作数据库再删除缓存
+        // 先操作数据库
         Long id = shop.getId();
         if (id == null) {
             return Result.fail("店铺id不能为空");
         }
         this.updateById(shop);
+        // 再删除缓存
         this.redisTemplate.delete(StrUtil.addPrefixIfNot(String.valueOf(shop.getId()), RedisConstants.CACHE_SHOP_KEY_PREFIX));
         return Result.ok();
     }
