@@ -54,7 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // ② 生成验证码
         String code = RandomUtil.randomNumbers(6);
         // ③ 保存验证码到 Redis 中，并设置验证码的有效期是 5 分钟
-        stringRedisTemplate.opsForValue().set(StrUtil.addPrefixIfNot(phone, RedisConstants.LOGIN_CODE_PHONE_KEY_PREFIX), code, Duration.ofMinutes(RedisConstants.LOGIN_CODE_TTL));
+        this.stringRedisTemplate.opsForValue().set(StrUtil.addPrefixIfNot(phone, RedisConstants.LOGIN_CODE_PHONE_KEY_PREFIX), code, Duration.ofMinutes(RedisConstants.LOGIN_CODE_TTL));
         // ⑤ 发送验证码
         log.info("发送验证码成功，验证码是 {}", code);
         return Result.ok();
@@ -70,12 +70,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 获取验证码
         String code = loginFormDto.getCode();
         // 根据手机号获取对应的真实的验证码
-        String realCode = stringRedisTemplate.opsForValue().get(StrUtil.addPrefixIfNot(phone, RedisConstants.LOGIN_CODE_PHONE_KEY_PREFIX));
+        String realCode = this.stringRedisTemplate.opsForValue().get(StrUtil.addPrefixIfNot(phone, RedisConstants.LOGIN_CODE_PHONE_KEY_PREFIX));
         // ② 校验验证码
         if (StrUtil.isBlank(realCode) || StrUtil.isBlank(code) || !code.equalsIgnoreCase(realCode)) {
             return Result.fail("验证码错误！");
         }
-        // ③ 根据手机号去表中查询该用户是否存在：如果存在，则表示登录成功，写入 Session；如果不存在，则快速创建用户，写入 Session
+        // ③ 根据手机号去表中查询该用户是否存在：如果存在，则表示登录成功，写入 Redis；如果不存在，则快速创建用户，写入 Redis
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getPhone, phone);
 
@@ -93,9 +93,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 将 User 对象转换为 UserVo 对象
         UserVo userVo = BeanUtil.copyProperties(user, UserVo.class);
         // 将 User 对象转换为 HashMap 存储到 Redis 中
-        redisTemplate.opsForHash().putAll(StrUtil.addPrefixIfNot(token, RedisConstants.LOGIN_TOKEN_KEY_PREFIX), BeanUtil.beanToMap(userVo));
+        this.redisTemplate.opsForHash().putAll(StrUtil.addPrefixIfNot(token, RedisConstants.LOGIN_TOKEN_KEY_PREFIX), BeanUtil.beanToMap(userVo));
         // 设置 token 的有效期
-        redisTemplate.expire(StrUtil.addPrefixIfNot(token, RedisConstants.LOGIN_TOKEN_KEY_PREFIX), Duration.ofMinutes(RedisConstants.LOGIN_TOKEN_TTL));
+        this.redisTemplate.expire(StrUtil.addPrefixIfNot(token, RedisConstants.LOGIN_TOKEN_KEY_PREFIX), Duration.ofMinutes(RedisConstants.LOGIN_TOKEN_TTL));
         return Result.ok(token);
     }
 

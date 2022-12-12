@@ -33,4 +33,9 @@ public interface RedisConstants {
      */
     String CACHE_SHOP_KEY_PREFIX = "cache:shop:";
 
+    /**
+     * 店铺类型查询列表缓存前缀
+     */
+    String CACHE_SHOP_TYPE_LIST_KEY_PREFIX = "cache:shop-type:list";
+
 }
