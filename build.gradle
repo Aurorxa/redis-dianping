@@ -30,12 +30,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     /* JSR 303 */
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'commons-io:commons-io:2.11.0'
     /* 自动建表 */
     implementation 'io.gitee.zero-wsh:acTable:2.0.6'
-
+    implementation 'com.google.guava:guava:31.1-jre'
 }
 
 tasks.named('test') {

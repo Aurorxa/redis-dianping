@@ -4,10 +4,12 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.redis.config.RedisBloomFilter;
 import com.github.redis.entity.Shop;
 import com.github.redis.mapper.ShopMapper;
 import com.github.redis.rest.Result;
 import com.github.redis.service.ShopService;
+import com.github.redis.utils.BloomFilterHelper;
 import com.github.redis.utils.RedisConstants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +36,19 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     @NonNull
     private RedisTemplate<String, Object> redisTemplate;
 
+    @NonNull
+    private RedisBloomFilter redisBloomFilter;
+
+    @NonNull
+    private BloomFilterHelper bloomFilterHelper;
+
     @Override
     public Result view(Long id) {
+        // 使用布隆过滤器，需要注意新增业务数据的时候需要将数据维护到布隆过滤器中
+        boolean b = this.redisBloomFilter.includeByBloomFilter(this.bloomFilterHelper, StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_BLOOM_KEY_PREFIX), String.valueOf(id));
+        if (!b) {
+            return Result.fail("该店铺不存在！");
+        }
         // ① 根据商铺 id 从 Redis 中查询商铺的缓存
         Map<Object, Object> entries = this.redisTemplate.opsForHash().entries(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX));
         // ② 如果 Redis 中存在，直接将信息返回给前端
