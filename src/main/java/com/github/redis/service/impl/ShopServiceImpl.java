@@ -45,10 +45,10 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     @Override
     public Result view(Long id) {
         // 使用布隆过滤器，需要注意新增业务数据的时候需要将数据维护到布隆过滤器中
-        boolean b = this.redisBloomFilter.includeByBloomFilter(this.bloomFilterHelper, StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_BLOOM_KEY_PREFIX), String.valueOf(id));
+     /*   boolean b = this.redisBloomFilter.includeByBloomFilter(this.bloomFilterHelper, StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_BLOOM_KEY_PREFIX), String.valueOf(id));
         if (!b) {
             return Result.fail("该店铺不存在！");
-        }
+        }*/
         // ① 根据商铺 id 从 Redis 中查询商铺的缓存
         Map<Object, Object> entries = this.redisTemplate.opsForHash().entries(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX));
         // ② 如果 Redis 中存在，直接将信息返回给前端
