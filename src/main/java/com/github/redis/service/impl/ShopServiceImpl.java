@@ -12,6 +12,7 @@ import com.github.redis.mapper.ShopMapper;
 import com.github.redis.rest.Result;
 import com.github.redis.service.ShopService;
 import com.github.redis.utils.BloomFilterHelper;
+import com.github.redis.utils.CacheClient;
 import com.github.redis.utils.RedisConstants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 许大仙
@@ -49,9 +51,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     @NonNull
     private BloomFilterHelper bloomFilterHelper;
 
+    @NonNull
+    private CacheClient cacheClient;
+
     @Override
     public Result view(Long id) {
-        Shop shop = this.viewWithLogicExpire(id);
+        // Shop shop = this.viewWithLogicExpire(id);
+        Shop shop = this.cacheClient.getWithPassThrough(RedisConstants.CACHE_SHOP_KEY_PREFIX, id, Shop.class, this::getById, RedisConstants.CACHE_SHOP_KEY_TTL, TimeUnit.MINUTES);
         if (ObjectUtil.isEmpty(shop)) {
             return Result.fail("店铺不存在");
         }
