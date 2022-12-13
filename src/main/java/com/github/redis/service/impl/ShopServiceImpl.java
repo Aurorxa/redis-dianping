@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.redis.config.RedisBloomFilter;
+import com.github.redis.dto.RedisLogicExpireDto;
 import com.github.redis.entity.Shop;
 import com.github.redis.mapper.ShopMapper;
 import com.github.redis.rest.Result;
@@ -22,7 +23,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author 许大仙
@@ -35,21 +39,19 @@ import java.util.Map;
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements ShopService {
 
+    private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
     @NonNull
     private RedisTemplate<String, Object> redisTemplate;
-
     @NonNull
     private StringRedisTemplate stringRedisTemplate;
-
     @NonNull
     private RedisBloomFilter redisBloomFilter;
-
     @NonNull
     private BloomFilterHelper bloomFilterHelper;
 
     @Override
     public Result view(Long id) {
-        Shop shop = this.viewWithMutex(id);
+        Shop shop = this.viewWithLogicExpire(id);
         if (ObjectUtil.isEmpty(shop)) {
             return Result.fail("店铺不存在");
         }
@@ -61,8 +63,38 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
      *
      * @return
      */
-    private Shop viewWithLogicExpire() {
-        return null;
+    private Shop viewWithLogicExpire(Long id) {
+        Map<Object, Object> entries = this.redisTemplate.opsForHash().entries(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX));
+        // 如果缓存中没有数据，直接返回
+        if (ObjectUtil.isEmpty(entries)) {
+            return null;
+        }
+        // 判断缓存中的逻辑过期是否过期
+        RedisLogicExpireDto<?> shopRedisLogicExpireDto = BeanUtil.fillBeanWithMap(entries, new RedisLogicExpireDto<>(), false);
+        LocalDateTime expireTime = shopRedisLogicExpireDto.getExpireTime();
+        Object data = shopRedisLogicExpireDto.getData();
+        System.out.println("data = " + data);
+        Shop shop = BeanUtil.fillBeanWithMap((Map<?, ?>) data, new Shop(), true);
+        // 如果缓存中的逻辑过期在此刻之后，那么就认为没有过期，则返回商铺信息；否则就认为过期，过期就需要获取互斥锁，并判断互斥锁能够获取
+        if (expireTime.isAfter(LocalDateTime.now())) {
+            return shop;
+        }
+        // 如果逻辑过期已经过期了，则需要获取互斥锁，如果获取不到，返回过期的商铺信息；如果获取到了，返回过期的商铺信息，并开启新的线程去将商品信息更新到 Redis 中，并释放锁
+        boolean isLock = this.tryLock(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.LOCK_SHOP_KEY_PREFIX));
+        if (!isLock) {
+            CACHE_REBUILD_EXECUTOR.submit(() -> {
+                try {
+                    // 重建缓存
+                    this.saveShop2Redis(id, 50L);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    // 释放锁
+                    this.unlock(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.LOCK_SHOP_KEY_PREFIX));
+                }
+            });
+        }
+        return shop;
     }
 
 
@@ -123,7 +155,14 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
      * @param expireSeconds
      */
     public void saveShop2Redis(Long id, Long expireSeconds) {
-
+        // 查询店铺数据
+        Shop shop = this.getById(id);
+        // 封装逻辑过期时间
+        RedisLogicExpireDto<Shop> redisLogicExpireDto = new RedisLogicExpireDto<>();
+        redisLogicExpireDto.setData(shop);
+        redisLogicExpireDto.setExpireTime(LocalDateTime.now().plusSeconds(expireSeconds));
+        // 写入 Redis
+        this.redisTemplate.opsForHash().putAll(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), BeanUtil.beanToMap(redisLogicExpireDto));
     }
 
     /**
