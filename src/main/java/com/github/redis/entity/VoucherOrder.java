@@ -1,6 +1,5 @@
 package com.github.redis.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.gitee.zerowsh.actable.annotation.AcColumn;
@@ -25,7 +24,7 @@ import java.time.LocalDateTime;
 @AcTable(name = "`tb_voucher_order`", comment = "优惠券的订单表")
 public class VoucherOrder implements Serializable {
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id")
     @AcColumn(name = "`id`", comment = "主键")
     private Long id;
 

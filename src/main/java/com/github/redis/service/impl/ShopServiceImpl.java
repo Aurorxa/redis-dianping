@@ -5,13 +5,11 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.redis.config.RedisBloomFilter;
 import com.github.redis.dto.RedisLogicExpireDto;
 import com.github.redis.entity.Shop;
 import com.github.redis.mapper.ShopMapper;
 import com.github.redis.rest.Result;
 import com.github.redis.service.ShopService;
-import com.github.redis.utils.BloomFilterHelper;
 import com.github.redis.utils.CacheClient;
 import com.github.redis.utils.RedisConstants;
 import lombok.NonNull;
@@ -46,11 +44,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     private RedisTemplate<String, Object> redisTemplate;
     @NonNull
     private StringRedisTemplate stringRedisTemplate;
-    @NonNull
-    private RedisBloomFilter redisBloomFilter;
-    @NonNull
-    private BloomFilterHelper bloomFilterHelper;
-
     @NonNull
     private CacheClient cacheClient;
 
