@@ -49,6 +49,14 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
 
     @Override
     public Result view(Long id) {
+        Shop shop = this.viewWithMutex(id);
+        if (ObjectUtil.isEmpty(shop)) {
+            return Result.fail("店铺不存在");
+        }
+        return Result.ok(shop);
+    }
+
+    private Shop viewWithMutex(Long id) {
         log.info("ShopServiceImpl.view {}", id);
         // 使用布隆过滤器，需要注意新增业务数据的时候需要将数据维护到布隆过滤器中
      /*   boolean b = this.redisBloomFilter.includeByBloomFilter(this.bloomFilterHelper, StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_BLOOM_KEY_PREFIX), String.valueOf(id));
@@ -59,7 +67,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         Map<Object, Object> entries = this.redisTemplate.opsForHash().entries(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX));
         // ② 如果 Redis 中存在，直接将信息返回给前端
         if (!ObjectUtil.isEmpty(entries)) {
-            return Result.ok(BeanUtil.fillBeanWithMap(entries, new Shop(), false));
+            return BeanUtil.fillBeanWithMap(entries, new Shop(), false);
         }
         // ③ 实现缓存重建
         // 获取互斥锁，并判断是否获取成功，如果成功，则查询数据库，并将数据写入到 Redis 中，并释放锁；如果失败，则休眠并重试
@@ -68,7 +76,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             boolean isLock = this.tryLock(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.LOCK_SHOP_KEY_PREFIX));
             if (!isLock) {
                 Thread.sleep(50);
-                return this.view(id);
+                return this.viewWithMutex(id);
             }
             // 如果 Redis 中没有找到商铺的缓存，就需要查询数据库
             shop = this.getById(id);
@@ -76,7 +84,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             Thread.sleep(1000);
             // 如果数据库中不存在，就返回错误信息
             if (ObjectUtil.isEmpty(shop)) {
-                return Result.fail("该店铺不存在！");
+                return null;
             }
             // 如果商铺存在，就将商铺信息写入到 Redis 中，并将商铺信息返回给前端
             this.redisTemplate.opsForHash().putAll(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), BeanUtil.beanToMap(shop));
@@ -88,7 +96,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             // 释放锁
             this.unlock(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.LOCK_SHOP_KEY_PREFIX));
         }
-        return Result.ok(shop);
+        return shop;
     }
 
     /**
