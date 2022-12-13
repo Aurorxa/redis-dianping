@@ -1,6 +1,7 @@
 package com.github.redis.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,6 +16,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
     private RedisTemplate<String, Object> redisTemplate;
 
     @NonNull
+    private StringRedisTemplate stringRedisTemplate;
+
+    @NonNull
     private RedisBloomFilter redisBloomFilter;
 
     @NonNull
@@ -44,6 +49,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
 
     @Override
     public Result view(Long id) {
+        log.info("ShopServiceImpl.view {}", id);
         // 使用布隆过滤器，需要注意新增业务数据的时候需要将数据维护到布隆过滤器中
      /*   boolean b = this.redisBloomFilter.includeByBloomFilter(this.bloomFilterHelper, StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_BLOOM_KEY_PREFIX), String.valueOf(id));
         if (!b) {
@@ -55,17 +61,54 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         if (!ObjectUtil.isEmpty(entries)) {
             return Result.ok(BeanUtil.fillBeanWithMap(entries, new Shop(), false));
         }
-        // ③ 如果 Redis 中没有找到商铺的缓存，就需要查询数据库
-        Shop shop = this.getById(id);
-        // ④ 如果数据库中不存在，就返回错误信息
-        if (ObjectUtil.isEmpty(shop)) {
-            return Result.fail("该店铺不存在！");
+        // ③ 实现缓存重建
+        // 获取互斥锁，并判断是否获取成功，如果成功，则查询数据库，并将数据写入到 Redis 中，并释放锁；如果失败，则休眠并重试
+        Shop shop;
+        try {
+            boolean isLock = this.tryLock(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.LOCK_SHOP_KEY_PREFIX));
+            if (!isLock) {
+                Thread.sleep(50);
+                return this.view(id);
+            }
+            // 如果 Redis 中没有找到商铺的缓存，就需要查询数据库
+            shop = this.getById(id);
+            // 模拟重建的延迟
+            Thread.sleep(1000);
+            // 如果数据库中不存在，就返回错误信息
+            if (ObjectUtil.isEmpty(shop)) {
+                return Result.fail("该店铺不存在！");
+            }
+            // 如果商铺存在，就将商铺信息写入到 Redis 中，并将商铺信息返回给前端
+            this.redisTemplate.opsForHash().putAll(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), BeanUtil.beanToMap(shop));
+            // 设置过期时间为 30 分钟
+            this.redisTemplate.expire(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), Duration.ofMinutes(RedisConstants.CACHE_SHOP_KEY_TTL));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            // 释放锁
+            this.unlock(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.LOCK_SHOP_KEY_PREFIX));
         }
-        // ⑤ 如果商铺存在，就将商铺信息写入到 Redis 中，并将商铺信息返回给前端
-        this.redisTemplate.opsForHash().putAll(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), BeanUtil.beanToMap(shop));
-        // 设置过期时间为 30 分钟
-        this.redisTemplate.expire(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.CACHE_SHOP_KEY_PREFIX), Duration.ofMinutes(RedisConstants.CACHE_SHOP_KEY_TTL));
         return Result.ok(shop);
+    }
+
+    /**
+     * 获取锁
+     *
+     * @param key
+     * @return
+     */
+    private boolean tryLock(String key) {
+        Boolean aBoolean = this.stringRedisTemplate.opsForValue().setIfAbsent(key, String.valueOf(Thread.currentThread().getId()), Duration.ofSeconds(10));
+        return BooleanUtil.isTrue(aBoolean);
+    }
+
+    /**
+     * 释放锁
+     *
+     * @param key
+     */
+    private void unlock(String key) {
+        this.stringRedisTemplate.delete(key);
     }
 
     @Override

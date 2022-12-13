@@ -34,6 +34,11 @@ public interface RedisConstants {
     String CACHE_SHOP_KEY_PREFIX = "cache:shop:";
 
     /**
+     * 互斥锁的前缀
+     */
+    String LOCK_SHOP_KEY_PREFIX = "lock:shop:";
+
+    /**
      * 店铺的布隆过滤器缓存前缀
      */
     String CACHE_SHOP_BLOOM_KEY_PREFIX = "cache:shop:bloom:";
