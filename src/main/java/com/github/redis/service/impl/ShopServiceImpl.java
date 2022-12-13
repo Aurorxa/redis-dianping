@@ -56,6 +56,22 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         return Result.ok(shop);
     }
 
+    /**
+     * 基于逻辑过期解决缓存击穿问题
+     *
+     * @return
+     */
+    private Shop viewWithLogicExpire() {
+        return null;
+    }
+
+
+    /**
+     * 基于互斥锁解决缓存击穿问题
+     *
+     * @param id
+     * @return
+     */
     private Shop viewWithMutex(Long id) {
         log.info("ShopServiceImpl.view {}", id);
         // 使用布隆过滤器，需要注意新增业务数据的时候需要将数据维护到布隆过滤器中
@@ -97,6 +113,17 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             this.unlock(StrUtil.addPrefixIfNot(String.valueOf(id), RedisConstants.LOCK_SHOP_KEY_PREFIX));
         }
         return shop;
+    }
+
+
+    /**
+     * 对缓存进行预热
+     *
+     * @param id
+     * @param expireSeconds
+     */
+    public void saveShop2Redis(Long id, Long expireSeconds) {
+
     }
 
     /**
