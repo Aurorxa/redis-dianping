@@ -28,9 +28,7 @@ public class UserController {
     @NonNull
     private UserService userService;
 
-    @Operation(summary = "发送验证码", description = "发送验证码", parameters = {
-            @Parameter(name = "phone", description = "手机号码"),
-    })
+    @Operation(summary = "发送验证码", description = "发送验证码", parameters = {@Parameter(name = "phone", description = "手机号码"),})
     @PostMapping("/code")
     public Result code(@RequestParam("phone") String phone, HttpSession session) {
         return this.userService.sendCode(phone, session);
@@ -47,6 +45,5 @@ public class UserController {
     public Result me() {
         return this.userService.me();
     }
-
 
 }
