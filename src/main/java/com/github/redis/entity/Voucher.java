@@ -1,17 +1,25 @@
 package com.github.redis.entity;
 
+import cn.hutool.core.date.DatePattern;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.gitee.zerowsh.actable.annotation.AcColumn;
 import io.gitee.zerowsh.actable.annotation.AcTable;
 import io.gitee.zerowsh.actable.emnus.ColumnTypeEnums;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -42,17 +50,16 @@ public class Voucher implements Serializable {
     @AcColumn(name = "`rules`", comment = "使用规则")
     private String rules;
 
-    @AcColumn(name = "`pay_value`", comment = "支付金额")
-    private Long payValue;
+    @AcColumn(name = "`pay_value`", comment = "支付金额，比如：45抵扣50，那么 45 就是支付金额，而 50 就是抵扣金额", decimalLength = 2, type = ColumnTypeEnums.DECIMAL)
+    private BigDecimal payValue;
 
-    @AcColumn(name = "`actual_value`", comment = "抵扣金额")
-    private Long actualValue;
+    @AcColumn(name = "`actual_value`", comment = "抵扣金额，比如：45抵扣50，那么 45 就是支付金额，而 50 就是抵扣金额", decimalLength = 2, type = ColumnTypeEnums.DECIMAL)
+    private BigDecimal actualValue;
 
-    @AcColumn(name = "`type`", comment = "优惠券类型 0 普通卷 1 秒杀卷，默认为 0", defaultValue = "0")
+    @AcColumn(name = "`type`", comment = "优惠券类型：0 普通卷 1 秒杀卷", defaultValue = "0")
     private Integer type;
 
-
-    @AcColumn(name = "`status`", comment = "优惠券状态 1 上架 2 下架 3 过期", defaultValue = "1")
+    @AcColumn(name = "`status`", comment = "优惠券状态：1 上架 2 下架 3 过期", defaultValue = "1")
     private Integer status;
 
     /**
@@ -65,18 +72,34 @@ public class Voucher implements Serializable {
      * 生效时间
      */
     @TableField(exist = false)
+    @DateTimeFormat(pattern = DatePattern.NORM_DATETIME_PATTERN)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime beginTime;
 
     /**
      * 失效时间
      */
     @TableField(exist = false)
+    @DateTimeFormat(pattern = DatePattern.NORM_DATETIME_PATTERN)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
     @AcColumn(name = "`create_time`", comment = "创建时间", type = ColumnTypeEnums.DATETIME)
+    @DateTimeFormat(pattern = DatePattern.NORM_DATETIME_PATTERN)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @AcColumn(name = "`update_time`", comment = "更新时间", type = ColumnTypeEnums.DATETIME)
+    @DateTimeFormat(pattern = DatePattern.NORM_DATETIME_PATTERN)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
 

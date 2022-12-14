@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -46,11 +47,11 @@ public class Shop implements Serializable {
     @AcColumn(name = "`address`", comment = "地址")
     private String address;
 
-    @AcColumn(name = "`x`", comment = "经度", type = ColumnTypeEnums.DECIMAL)
-    private Double x;
+    @AcColumn(name = "`x`", comment = "经度", decimalLength = 6, type = ColumnTypeEnums.DECIMAL)
+    private BigDecimal x;
 
-    @AcColumn(name = "`y`", comment = "维度", type = ColumnTypeEnums.DECIMAL)
-    private Double y;
+    @AcColumn(name = "`y`", comment = "维度", decimalLength = 6, type = ColumnTypeEnums.DECIMAL)
+    private BigDecimal y;
 
     @AcColumn(name = "`avg_price`", comment = "均价，取整数")
     private Long avgPrice;

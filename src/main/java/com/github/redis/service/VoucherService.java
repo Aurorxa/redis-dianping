@@ -2,6 +2,7 @@ package com.github.redis.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.redis.entity.Voucher;
+import com.github.redis.rest.Result;
 
 /**
  * @author 许大仙
@@ -10,4 +11,5 @@ import com.github.redis.entity.Voucher;
  */
 public interface VoucherService extends IService<Voucher> {
 
+    Result queryVoucherOfShop(Long shopId);
 }

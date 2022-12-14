@@ -36,11 +36,7 @@ import java.time.format.DateTimeFormatter;
 public class RedisConfig {
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        RedisSerializer<String> redisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        // ObjectMapper objectMapper = JsonMapper.builder().findAndAddModules().build();
+    public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         // 日期和时间格式化
         JavaTimeModule javaTimeModule = new JavaTimeModule();
@@ -53,11 +49,15 @@ public class RedisConfig {
         objectMapper.registerModule(javaTimeModule);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        //將類名稱序列化到json串中
-        //mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-        // objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-        // objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_ARRAY);
-        jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
+        return objectMapper;
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        RedisSerializer<String> redisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        jackson2JsonRedisSerializer.setObjectMapper(this.objectMapper());
         redisTemplate.setConnectionFactory(factory);
         redisTemplate.setKeySerializer(redisSerializer);
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
