@@ -32,7 +32,7 @@ public class SeckillVoucherServiceImpl extends ServiceImpl<SeckillVoucherMapper,
     public void addSeckillVoucher(Voucher voucher) {
         // 保存优惠卷
         this.voucherMapper.insert(voucher);
-        // 保存秒杀信息
+        // 保存秒杀卷信息
         SeckillVoucher seckillVoucher = new SeckillVoucher();
         seckillVoucher.setVoucherId(voucher.getId());
         seckillVoucher.setStock(voucher.getStock());
@@ -41,7 +41,3 @@ public class SeckillVoucherServiceImpl extends ServiceImpl<SeckillVoucherMapper,
         this.save(seckillVoucher);
     }
 }
-
-
-
-
