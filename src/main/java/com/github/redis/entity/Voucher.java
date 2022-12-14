@@ -48,11 +48,11 @@ public class Voucher implements Serializable {
     @AcColumn(name = "`actual_value`", comment = "抵扣金额")
     private Long actualValue;
 
-    @AcColumn(name = "`type`", comment = "优惠券类型")
+    @AcColumn(name = "`type`", comment = "优惠券类型 0 普通卷 1 秒杀卷，默认为 0", defaultValue = "0")
     private Integer type;
 
 
-    @AcColumn(name = "`status`", comment = "优惠券状态")
+    @AcColumn(name = "`status`", comment = "优惠券状态 1 上架 2 下架 3 过期", defaultValue = "1")
     private Integer status;
 
     /**
