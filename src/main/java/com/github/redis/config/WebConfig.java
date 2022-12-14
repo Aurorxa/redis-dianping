@@ -24,12 +24,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 刷新 Token 拦截器
-        registry.addInterceptor(new RefreshTokenInterceptor(this.redisTemplate))
-                .addPathPatterns("/**")
-                .order(1);
+        registry.addInterceptor(new RefreshTokenInterceptor(this.redisTemplate)).addPathPatterns("/**").excludePathPatterns("/images/**", "/swagger**/**", "/**/api-docs/**", "/webjars/**").order(1);
 
         // 登录拦截器
-        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns("/shop/**", "/shop-type/**", "/blog/hot", "/user/login", "/user/code").order(2);
+        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns("/shop/**", "/shop-type/**", "/blog/hot", "/user/login", "/user/code", "/images/**", "/swagger**/**", "/**/api-docs/**", "/webjars/**").order(2);
     }
 
 }

@@ -57,7 +57,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         this.stringRedisTemplate.opsForValue().set(StrUtil.addPrefixIfNot(phone, RedisConstants.LOGIN_CODE_PHONE_KEY_PREFIX), code, Duration.ofMinutes(RedisConstants.LOGIN_CODE_TTL));
         // ⑤ 发送验证码
         log.info("发送验证码成功，验证码是 {}", code);
-        return Result.ok();
+        return Result.ok(code);
     }
 
     @Override

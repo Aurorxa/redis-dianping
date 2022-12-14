@@ -39,3 +39,4 @@ zero:
   ac-table:
     model: add_or_update
     entity-package: com.github.redis.entity
+

@@ -3,6 +3,7 @@ package com.github.redis.web;
 import com.github.redis.entity.Voucher;
 import com.github.redis.rest.Result;
 import com.github.redis.service.SeckillVoucherService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/voucher")
 @RequiredArgsConstructor
+@Tag(name = "优惠券管理", description = "优惠券管理")
 public class VoucherController {
 
     @NonNull

@@ -3,6 +3,9 @@ package com.github.redis.web;
 import com.github.redis.dto.LoginFormDto;
 import com.github.redis.rest.Result;
 import com.github.redis.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,40 +22,27 @@ import javax.servlet.http.HttpSession;
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
+@Tag(name = "用户管理", description = "用户管理")
 public class UserController {
 
     @NonNull
     private UserService userService;
 
-    /**
-     * 发送验证码
-     *
-     * @param phone   手机号
-     * @param session
-     * @return
-     */
+    @Operation(summary = "发送验证码", description = "发送验证码", parameters = {
+            @Parameter(name = "phone", description = "手机号码"),
+    })
     @PostMapping("/code")
-    public Result code(String phone, HttpSession session) {
+    public Result code(@RequestParam("phone") String phone, HttpSession session) {
         return this.userService.sendCode(phone, session);
     }
 
-    /**
-     * 登录
-     *
-     * @param loginFormDto
-     * @param session
-     * @return
-     */
+    @Operation(summary = "登录", description = "登录")
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDto loginFormDto, HttpSession session) {
         return this.userService.login(loginFormDto, session);
     }
 
-    /**
-     * 用户个人信息
-     *
-     * @return
-     */
+    @Operation(summary = "用户个人信息", description = "用户个人信息")
     @GetMapping("/me")
     public Result me() {
         return this.userService.me();

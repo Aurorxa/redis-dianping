@@ -2,6 +2,7 @@ package com.github.redis.web;
 
 import com.github.redis.rest.Result;
 import com.github.redis.service.ShopTypeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/shop-type")
 @RequiredArgsConstructor
+@Tag(name = "商铺类型管理", description = "商铺类型管理")
 public class ShopTypeController {
 
     @NonNull

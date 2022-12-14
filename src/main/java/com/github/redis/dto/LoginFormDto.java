@@ -1,5 +1,6 @@
 package com.github.redis.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,20 +11,15 @@ import java.io.Serializable;
  * @since 2022-12-09 14:42:52
  */
 @Data
+@Schema(name = "登录参数", description = "登录参数")
 public class LoginFormDto implements Serializable {
 
-    /**
-     * 手机号码
-     */
+    @Schema(description = "手机号码")
     private String phone;
 
-    /**
-     * 密码
-     */
+    @Schema(description = "密码")
     private String password;
 
-    /**
-     * 验证码
-     */
+    @Schema(description = "验证码")
     private String code;
 }

@@ -37,6 +37,8 @@ dependencies {
     /* 自动建表 */
     implementation 'io.gitee.zero-wsh:acTable:2.0.6'
     implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.6.13'
+
 }
 
 tasks.named('test') {
